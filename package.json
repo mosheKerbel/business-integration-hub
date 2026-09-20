@@ -1,0 +1,33 @@
+{
+  "name": "business-integration-hub",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Business Integration Hub — ERP integration platform",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r run typecheck",
+    "test": "pnpm build && vitest run",
+    "test:watch": "vitest",
+    "dev:api": "pnpm --filter @bih/api dev",
+    "dev:worker": "pnpm --filter @bih/worker dev",
+    "db:up": "docker compose up -d hub-postgres",
+    "db:down": "docker compose down",
+    "db:wait": "docker compose exec hub-postgres pg_isready -U bih -d bih_hub"
+  },
+  "devDependencies": {
+    "@bih/contracts": "workspace:*",
+    "@bih/db": "workspace:*",
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^22.19.1",
+    "eslint": "^9.39.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.0",
+    "vitest": "^3.2.4"
+  }
+}

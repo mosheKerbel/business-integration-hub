@@ -1,0 +1,20 @@
+{
+  "name": "@bih/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.typecheck.json",
+    "dev": "pnpm --filter @bih/worker^... build && tsx watch --env-file=../../.env src/index.ts",
+    "start": "node --env-file=../../.env dist/index.js"
+  },
+  "dependencies": {
+    "@bih/db": "workspace:*",
+    "@bih/observability": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
