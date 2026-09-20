@@ -25,11 +25,11 @@ export function createLogger(
       return;
     }
     const line = JSON.stringify({
+      ...fields,
       timestamp: new Date().toISOString(),
       level,
       service,
       message,
-      ...fields,
     });
     if (level === 'error' || level === 'warn') {
       console.error(line);

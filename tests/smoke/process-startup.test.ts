@@ -26,28 +26,59 @@ async function startProcess(
   });
 
   const stop = () => {
-    if (!child.killed) {
+    child.stdout?.destroy();
+    child.stderr?.destroy();
+    if (child.pid !== undefined && !child.killed) {
       child.kill('SIGTERM');
     }
   };
 
   await new Promise<void>((resolve, reject) => {
+    let settled = false;
+    const rl = createInterface({ input: child.stdout! });
+
+    const cleanup = (killChild: boolean) => {
+      clearTimeout(timeout);
+      rl.close();
+      child.removeAllListeners('exit');
+      if (killChild) {
+        stop();
+      }
+    };
+
+    const fail = (error: Error) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      cleanup(true);
+      reject(error);
+    };
+
+    const succeed = () => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      cleanup(false);
+      resolve();
+    };
+
     const timeout = setTimeout(() => {
-      reject(new Error(`Process in ${cwd} did not log startup within 10s`));
+      fail(new Error(`Process in ${cwd} did not log startup within 10s`));
     }, 10_000);
 
-    const rl = createInterface({ input: child.stdout! });
     rl.on('line', (line) => {
-      if (line.includes('"message":"API listening"') || line.includes('"message":"Worker started"')) {
-        clearTimeout(timeout);
-        rl.close();
-        resolve();
+      if (
+        line.includes('"message":"API listening"') ||
+        line.includes('"message":"Worker started"')
+      ) {
+        succeed();
       }
     });
 
-    child.on('exit', (code) => {
-      clearTimeout(timeout);
-      reject(new Error(`Process in ${cwd} exited early with code ${code}`));
+    child.once('exit', (code) => {
+      fail(new Error(`Process in ${cwd} exited early with code ${code}`));
     });
   });
 
@@ -77,6 +108,8 @@ describe('process startup smoke', () => {
 
   it('starts worker without provider credentials', async () => {
     const proc = await startProcess(workerDir, 'dist/index.js', {
+      DATABASE_URL:
+        process.env.DATABASE_URL ?? 'postgresql://bih:bih@127.0.0.1:15432/bih_hub',
       WORKER_POLL_INTERVAL_MS: '60000',
       LOG_LEVEL: 'info',
     });

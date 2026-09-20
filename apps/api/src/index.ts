@@ -44,8 +44,14 @@ async function main(): Promise<void> {
     void handleRequest(req, res);
   });
 
-  server.listen(config.port, config.host, () => {
-    log.info('API listening', { host: config.host, port: config.port });
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', (error) => {
+      reject(error);
+    });
+    server.listen(config.port, config.host, () => {
+      log.info('API listening', { host: config.host, port: config.port });
+      resolve();
+    });
   });
 }
 

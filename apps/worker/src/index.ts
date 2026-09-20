@@ -7,28 +7,31 @@ const log = createLogger('worker');
 
 let shuttingDown = false;
 
-async function tick(): Promise<void> {
-  const databaseUrl = requireDatabaseUrl();
+async function tick(databaseUrl: string): Promise<void> {
   await checkDatabaseConnection(databaseUrl);
   log.debug('Worker database connectivity check succeeded');
 }
 
 async function main(): Promise<void> {
   const config = loadWorkerConfig();
+  const databaseUrl = requireDatabaseUrl();
   log.info('Worker started', { pollIntervalMs: config.pollIntervalMs });
+
+  let pollTimer: ReturnType<typeof setTimeout> | undefined;
 
   const run = async (): Promise<void> => {
     if (shuttingDown) {
       return;
     }
     try {
-      await tick();
+      await tick(databaseUrl);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       log.warn('Worker tick failed', { error: message });
     }
     if (!shuttingDown) {
-      setTimeout(() => {
+      pollTimer = setTimeout(() => {
+        pollTimer = undefined;
         void run();
       }, config.pollIntervalMs);
     }
@@ -39,6 +42,10 @@ async function main(): Promise<void> {
   const shutdown = (signal: string) => {
     log.info('Worker shutting down', { signal });
     shuttingDown = true;
+    if (pollTimer !== undefined) {
+      clearTimeout(pollTimer);
+      pollTimer = undefined;
+    }
   };
 
   process.on('SIGINT', () => shutdown('SIGINT'));

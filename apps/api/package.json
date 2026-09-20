@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.typecheck.json",
     "dev": "pnpm --filter @bih/api^... build && tsx watch --env-file=../../.env src/index.ts",
     "start": "node --env-file=../../.env dist/index.js"
   },

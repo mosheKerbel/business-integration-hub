@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 
 import { checkDatabaseConnection, requireDatabaseUrl } from '@bih/db';
 
-const databaseUrl = process.env.DATABASE_URL;
 const runDbIntegration = process.env.RUN_DB_INTEGRATION === '1';
 
 describe('Hub PostgreSQL connectivity', () => {
-  it.skipIf(!runDbIntegration || !databaseUrl)(
+  it.skipIf(!runDbIntegration)(
     'connects when RUN_DB_INTEGRATION=1 and DATABASE_URL is configured',
     async () => {
-      await expect(checkDatabaseConnection(databaseUrl!)).resolves.toBeUndefined();
+      const databaseUrl = requireDatabaseUrl();
+      await expect(checkDatabaseConnection(databaseUrl)).resolves.toBeUndefined();
     },
   );
 
