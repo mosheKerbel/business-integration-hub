@@ -14,12 +14,21 @@ function moneyMatchesSnapshotCurrency(
   return money === undefined || money.currency === currency;
 }
 
-export const CustomerFinancialSnapshotSchema = CanonicalEntityMetadataSchema.extend({
-  customerId: UuidSchema,
+/** Shared snapshot money fields (canonical and adapter pulls). */
+export const CustomerFinancialSnapshotMoneyFieldsSchema = z.object({
   currency: CurrencyCodeSchema,
   balance: MoneySchema.optional(),
   creditLimit: MoneySchema.optional(),
-}).superRefine((value, ctx) => {
+});
+
+export type CustomerFinancialSnapshotMoneyFields = z.infer<
+  typeof CustomerFinancialSnapshotMoneyFieldsSchema
+>;
+
+export function refineSnapshotCurrency(
+  value: CustomerFinancialSnapshotMoneyFields,
+  ctx: z.RefinementCtx,
+): void {
   if (!moneyMatchesSnapshotCurrency(value.balance, value.currency)) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -34,16 +43,22 @@ export const CustomerFinancialSnapshotSchema = CanonicalEntityMetadataSchema.ext
       path: ['creditLimit', 'currency'],
     });
   }
-});
+}
+
+const CustomerFinancialSnapshotExternalBaseSchema = InboundEntityBaseSchema.extend({
+  customerExternalId: ExternalIdSchema,
+}).merge(CustomerFinancialSnapshotMoneyFieldsSchema);
+
+export const CustomerFinancialSnapshotSchema = CanonicalEntityMetadataSchema.extend({
+  customerId: UuidSchema,
+})
+  .merge(CustomerFinancialSnapshotMoneyFieldsSchema)
+  .superRefine(refineSnapshotCurrency);
 
 export type CustomerFinancialSnapshot = z.infer<typeof CustomerFinancialSnapshotSchema>;
 
-export const CustomerFinancialSnapshotExternalSchema = InboundEntityBaseSchema.extend({
-  customerExternalId: ExternalIdSchema,
-  currency: CurrencyCodeSchema,
-  balance: MoneySchema.optional(),
-  creditLimit: MoneySchema.optional(),
-});
+export const CustomerFinancialSnapshotExternalSchema =
+  CustomerFinancialSnapshotExternalBaseSchema.superRefine(refineSnapshotCurrency);
 
 export type CustomerFinancialSnapshotExternal = z.infer<
   typeof CustomerFinancialSnapshotExternalSchema
@@ -71,10 +86,25 @@ export const OpenFinancialDocumentExternalSchema = InboundEntityBaseSchema.exten
 
 export type OpenFinancialDocumentExternal = z.infer<typeof OpenFinancialDocumentExternalSchema>;
 
+const CustomerFinancialSnapshotExternalSnapshotBranchSchema =
+  CustomerFinancialSnapshotExternalBaseSchema.extend({
+    kind: z.literal('snapshot'),
+  });
+
+const OpenFinancialDocumentExternalBranchSchema = OpenFinancialDocumentExternalSchema.extend({
+  kind: z.literal('open_document'),
+});
+
 /** Union tag for `pullFinancials` pages. */
-export const FinancialExternalSchema = z.discriminatedUnion('kind', [
-  CustomerFinancialSnapshotExternalSchema.extend({ kind: z.literal('snapshot') }),
-  OpenFinancialDocumentExternalSchema.extend({ kind: z.literal('open_document') }),
-]);
+export const FinancialExternalSchema = z
+  .discriminatedUnion('kind', [
+    CustomerFinancialSnapshotExternalSnapshotBranchSchema,
+    OpenFinancialDocumentExternalBranchSchema,
+  ])
+  .superRefine((value, ctx) => {
+    if (value.kind === 'snapshot') {
+      refineSnapshotCurrency(value, ctx);
+    }
+  });
 
 export type FinancialExternal = z.infer<typeof FinancialExternalSchema>;

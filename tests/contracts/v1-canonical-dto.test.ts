@@ -155,6 +155,101 @@ describe('@bih/contracts v1 canonical DTOs', () => {
     });
   });
 
+  describe('financial snapshot currency', () => {
+    const externalSnapshotBase = {
+      organizationId: ORG_ID,
+      sourceConnectionId: CONNECTION_ID,
+      externalId: 'fin-snap-1',
+      sourceUpdatedAt: null,
+      customerExternalId: 'cust-ext-1',
+      currency: 'ILS',
+    };
+
+    it('rejects external snapshot when balance currency mismatches snapshot currency', () => {
+      const result = v1.CustomerFinancialSnapshotExternalSchema.safeParse({
+        ...externalSnapshotBase,
+        balance: { amount: '10.00', currency: 'USD' },
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.some((issue) => issue.path.join('.') === 'balance.currency')).toBe(
+          true,
+        );
+      }
+    });
+
+    it('rejects external snapshot when creditLimit currency mismatches snapshot currency', () => {
+      const result = v1.CustomerFinancialSnapshotExternalSchema.safeParse({
+        ...externalSnapshotBase,
+        creditLimit: { amount: '1000.00', currency: 'USD' },
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(
+          result.error.issues.some((issue) => issue.path.join('.') === 'creditLimit.currency'),
+        ).toBe(true);
+      }
+    });
+
+    it('rejects FinancialExternal snapshot union branch on currency mismatch', () => {
+      const result = v1.FinancialExternalSchema.safeParse({
+        ...externalSnapshotBase,
+        kind: 'snapshot',
+        balance: { amount: '5.00', currency: 'USD' },
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.some((issue) => issue.path.join('.') === 'balance.currency')).toBe(
+          true,
+        );
+      }
+    });
+  });
+
+  describe('SalesDocumentExternal', () => {
+    const externalDocBase = {
+      organizationId: ORG_ID,
+      sourceConnectionId: CONNECTION_ID,
+      externalId: 'hist-doc-1',
+      sourceUpdatedAt: NOW,
+      customerExternalId: 'cust-ext-1',
+      documentNumber: 'SO-100',
+      documentDate: NOW,
+      totalAmount: { amount: '10.00', currency: 'ILS' },
+    };
+
+    it('requires productExternalId on each external history line', () => {
+      const missingProduct = v1.SalesDocumentExternalSchema.safeParse({
+        ...externalDocBase,
+        lines: [
+          {
+            externalId: 'line-1',
+            quantity: '1',
+            unitPrice: { amount: '10.00', currency: 'ILS' },
+            lineTotal: { amount: '10.00', currency: 'ILS' },
+          },
+        ],
+      });
+      expect(missingProduct.success).toBe(false);
+    });
+
+    it('accepts external history document when lines include productExternalId', () => {
+      const valid = v1.SalesDocumentExternalSchema.safeParse({
+        ...externalDocBase,
+        lines: [
+          {
+            externalId: 'line-1',
+            productExternalId: 'prod-ext-1',
+            quantity: '1',
+            unitPrice: { amount: '10.00', currency: 'ILS' },
+            lineTotal: { amount: '10.00', currency: 'ILS' },
+          },
+        ],
+      });
+      expect(valid.success).toBe(true);
+    });
+  });
+
   describe('SyncPage', () => {
     it('validates cursor pagination metadata on sync pages', () => {
       const page = v1.CustomerExternalSyncPageSchema.safeParse({

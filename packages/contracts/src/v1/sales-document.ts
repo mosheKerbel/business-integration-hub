@@ -50,7 +50,7 @@ export const SalesDocumentExternalSchema = InboundEntityBaseSchema.extend({
     .array(
       z.object({
         externalId: ExternalIdSchema,
-        productExternalId: ExternalIdSchema.optional(),
+        productExternalId: ExternalIdSchema,
         description: z.string().max(512).optional(),
         quantity: QuantitySchema,
         unitPrice: MoneySchema,
