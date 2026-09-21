@@ -21,6 +21,7 @@
     "db:wait": "docker compose exec hub-postgres pg_isready -U bih -d bih_hub"
   },
   "devDependencies": {
+    "@bih/canonical-model": "workspace:*",
     "@bih/contracts": "workspace:*",
     "@bih/db": "workspace:*",
     "@eslint/js": "^9.39.1",

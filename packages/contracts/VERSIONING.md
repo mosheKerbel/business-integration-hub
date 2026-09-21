@@ -29,3 +29,7 @@ Breaking public changes **must not** ship under an existing `v1` export. Add `v2
 ## Runtime validation
 
 All public shapes are defined with runtime schemas (Zod) alongside inferred TypeScript types. TypeScript types alone are not sufficient for boundary validation.
+
+## Canonical entity DTOs (`v1`)
+
+Entity schemas (Customer, Product, CustomerAssortment, CustomerPrice, financial/history documents, sync pages, change-feed items, outbound commands) live under `packages/contracts/src/v1/` and are exported from the `v1` namespace. `CustomerAssortment` and `CustomerPrice` remain separate contracts. Outbound command objects use `.strict()` so provider- or product-specific fields cannot be added at the public boundary.
