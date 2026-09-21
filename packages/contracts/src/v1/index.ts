@@ -31,12 +31,14 @@ export {
 export {
   ErrorCodeSchema,
   SafeApiErrorSchema,
+  SafeErrorDetailsSchema,
   sanitizeErrorDetails,
   serializeSafeApiError,
   toSafeApiError,
   type ErrorCode,
   type SafeApiError,
   type SafeApiErrorInput,
+  type SafeDetailValue,
 } from './errors.js';
 
 export {

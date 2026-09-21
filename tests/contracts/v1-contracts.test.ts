@@ -136,5 +136,57 @@ describe('@bih/contracts v1', () => {
       });
       expect(leaked.details).toEqual({ count: 1 });
     });
+
+    it('accepts primitive, null, and array details aligned with sanitizeErrorDetails', () => {
+      const stringDetails = v1.toSafeApiError({
+        code: 'VALIDATION_FAILED',
+        message: 'Hint',
+        details: 'field is required',
+      });
+      expect(stringDetails.details).toBe('field is required');
+      expect(v1.SafeApiErrorSchema.safeParse(stringDetails).success).toBe(true);
+
+      const nullDetails = v1.toSafeApiError({
+        code: 'VALIDATION_FAILED',
+        message: 'Empty',
+        details: null,
+      });
+      expect(nullDetails.details).toBe(null);
+      expect(v1.SafeApiErrorSchema.safeParse(nullDetails).success).toBe(true);
+
+      const arrayDetails = v1.toSafeApiError({
+        code: 'VALIDATION_FAILED',
+        message: 'List',
+        details: ['first', { code: 'REQUIRED' }],
+      });
+      expect(arrayDetails.details).toEqual(['first', { code: 'REQUIRED' }]);
+      expect(v1.SafeApiErrorSchema.safeParse(arrayDetails).success).toBe(true);
+    });
+
+    it('rejects forbidden keys and unsupported values in SafeApiErrorSchema.safeParse', () => {
+      expect(
+        v1.SafeApiErrorSchema.safeParse({
+          code: 'VALIDATION_FAILED',
+          message: 'Bad',
+          details: { password: 'secret' },
+        }).success,
+      ).toBe(false);
+
+      expect(
+        v1.SafeApiErrorSchema.safeParse({
+          code: 'VALIDATION_FAILED',
+          message: 'Bad',
+          details: { field: () => undefined },
+        }).success,
+      ).toBe(false);
+
+      expect(
+        v1.SafeApiErrorSchema.safeParse({
+          code: 'VALIDATION_FAILED',
+          message: 'Bad',
+          details: { field: 'customerId', nested: { safeNote: 'ok' } },
+        }).success,
+      ).toBe(true);
+    });
   });
 });
