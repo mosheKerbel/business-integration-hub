@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@bih/db": "workspace:*",
-    "@bih/observability": "workspace:*"
+    "@bih/observability": "workspace:*",
+    "@bih/security": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.20.6",

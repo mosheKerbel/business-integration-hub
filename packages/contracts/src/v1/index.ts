@@ -171,4 +171,30 @@ export {
   type ExternalDocumentResult,
 } from './outbound.js';
 
+export {
+  BINDING_REF_MAX_LENGTH,
+  BindingRefSchema,
+  BindingStatusSchema,
+  CONSUMER_KEY_MAX_LENGTH,
+  CONSUMER_SCOPE_VALUES,
+  CONSUMER_TENANT_REF_MAX_LENGTH,
+  ConsumerContextSchema,
+  ConsumerKeySchema,
+  ConsumerScopeSchema,
+  ConsumerScopesSchema,
+  ConsumerStatusSchema,
+  ConsumerTenantRefSchema,
+  AuthenticatedConsumerPrincipalSchema,
+  consumerHasScope,
+  type AuthenticatedConsumerPrincipal,
+  type BindingRef,
+  type BindingStatus,
+  type ConsumerContext,
+  type ConsumerKey,
+  type ConsumerScope,
+  type ConsumerScopes,
+  type ConsumerStatus,
+  type ConsumerTenantRef,
+} from './consumer-auth.js';
+
 export const CONTRACT_API_VERSION = 'v1';
