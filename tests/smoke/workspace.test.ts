@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { CONTRACTS_PACKAGE } from '@bih/contracts';
+import { v1 } from '@bih/contracts';
 import { loadApiConfig } from '../../apps/api/src/config.js';
 import { loadWorkerConfig } from '../../apps/worker/src/config.js';
 
@@ -18,7 +18,8 @@ describe('workspace smoke', () => {
     });
   });
 
-  it('resolves scaffolded contract package', () => {
-    expect(CONTRACTS_PACKAGE).toBe('@bih/contracts');
+  it('resolves v1 contract package', () => {
+    expect(v1.CONTRACT_API_VERSION).toBe('v1');
+    expect(v1.UuidSchema.safeParse('550e8400-e29b-41d4-a716-446655440000').success).toBe(true);
   });
 });
