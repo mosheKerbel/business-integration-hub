@@ -24,6 +24,7 @@
     "@bih/canonical-model": "workspace:*",
     "@bih/contracts": "workspace:*",
     "@bih/db": "workspace:*",
+    "@bih/security": "workspace:*",
     "@eslint/js": "^9.39.1",
     "@types/node": "^22.19.1",
     "eslint": "^9.39.1",

@@ -17,6 +17,9 @@ importers:
       '@bih/db':
         specifier: workspace:*
         version: link:packages/db
+      '@bih/security':
+        specifier: workspace:*
+        version: link:packages/security
       '@eslint/js':
         specifier: ^9.39.1
         version: 9.39.5
@@ -44,6 +47,9 @@ importers:
       '@bih/observability':
         specifier: workspace:*
         version: link:../../packages/observability
+      '@bih/security':
+        specifier: workspace:*
+        version: link:../../packages/security
     devDependencies:
       tsx:
         specifier: ^4.20.6
@@ -100,7 +106,11 @@ importers:
 
   packages/outbound: {}
 
-  packages/security: {}
+  packages/security:
+    dependencies:
+      '@bih/contracts':
+        specifier: workspace:*
+        version: link:../contracts
 
   packages/sync-engine: {}
 
